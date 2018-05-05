@@ -1,0 +1,66 @@
+#include <my_global.h>
+//#include <mysql.h>
+#include </usr/include/mysql/mysql.h>
+
+int main(int argc, char **argv)
+{  
+  MYSQL *con = mysql_init(NULL);
+
+  char *SQL_QUERY = "select glpi_tickets.id, glpi_tickets.content, glpi_plugin_fields_tickethosts.hostsfield from glpi_tickets inner join glpi_plugin_fields_tickethosts on (glpi_tickets.id = glpi_plugin_fields_tickethosts.items_id);";
+ 	
+  if (con == NULL) 
+  {
+      fprintf(stderr, "%s\n", mysql_error(con));
+      exit(1);
+  }
+
+  if (mysql_real_connect(con, "localhost", "root", "root", "glpi", 0, NULL, 0) == NULL) 
+  {
+      fprintf(stderr, "%s\n", mysql_error(con));
+      mysql_close(con);
+      exit(1);
+  }  
+
+/*
+  if (mysql_query(con, "select * from glpi_users")) 
+  {
+      fprintf(stderr, "%s\n", mysql_error(con));
+      mysql_close(con);
+      exit(1);
+  }
+*/
+//if (mysql_query(con, "select * from glpi_users"))
+  
+  if (mysql_query(con, SQL_QUERY))  
+  {
+      fprintf(stderr, "%s\n", mysql_error(con));
+      //finish_with_error(con);
+  }
+  
+  MYSQL_RES *result = mysql_store_result(con);
+  
+  if (result == NULL) 
+  {
+      fprintf(stderr, "%s\n", mysql_error(con));
+      //finish_with_error(con);
+  }
+
+  int num_fields = mysql_num_fields(result);
+
+  MYSQL_ROW row;
+  
+  while ((row = mysql_fetch_row(result))) 
+  { 
+      int i = 0;
+      for(i = 0; i < num_fields; i++) 
+      { 
+          printf("%s ", row[i] ? row[i] : "NULL"); 
+      } 
+      printf("\n"); 
+  }
+  
+  mysql_free_result(result);
+
+  mysql_close(con);
+  exit(0);
+}
